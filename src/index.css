@@ -3,3 +3,10 @@
 @import 'tailwindcss/utilities';
 
 /* Vos styles personnalisés peuvent être ajoutés ici */
+.shadow-custom {
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.text-shadow {
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}

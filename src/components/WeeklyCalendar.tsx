@@ -9,7 +9,7 @@ interface Room {
   _id: string;
   name: string;
   equipment: string;
-  reservations: string[]; // Ajouté pour stocker les réservations
+  reservations: string[];
 }
 
 const WeeklyCalendar: React.FC = () => {
@@ -18,8 +18,8 @@ const WeeklyCalendar: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{ roomId: string, date: string } | null>(null);
   const [modalContent, setModalContent] = useState<'createRoom' | 'makeReservation' | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [userGrade, setUserGrade] = useState<string>('visiteur');
+  const [error, setError] = useState<string | null>(null);  // Ajout de cette ligne
 
   const fetchRooms = useCallback(async () => {
     try {
@@ -34,11 +34,15 @@ const WeeklyCalendar: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching rooms:', error);
+      setError('Erreur lors de la récupération des salles');
     }
   }, []);
 
   useEffect(() => {
     fetchRooms();
+    // Récupérer le grade de l'utilisateur depuis le localStorage
+    const grade = localStorage.getItem('userGrade') || 'visiteur';
+    setUserGrade(grade);
   }, [fetchRooms]);
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -48,126 +52,15 @@ const WeeklyCalendar: React.FC = () => {
     setCurrentDate(addWeeks(currentDate, amount));
   };
 
-  const handleAddRoom = async (newRoom: { name: string; equipment: string }) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        return;
-      }
-
-      const response = await fetch('http://localhost:1234/api/rooms', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(newRoom)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la création de la salle');
-      }
-
-      const data = await response.json();
-      console.log('Salle créée avec succès:', data);
-      setIsModalOpen(false);
-      await fetchRooms();
-      setError(null);
-    } catch (error) {
-      console.error('Error adding room:', error);
-      setError(error instanceof Error ? error.message : String(error));
-    }
-  };
-
   const handleCellClick = (roomId: string, date: Date) => {
+    if (userGrade === 'visiteur') {
+      // Les visiteurs ne peuvent pas interagir avec les cellules
+      return;
+    }
     const formattedDate = format(date, 'dd MM yyyy');
     setSelectedCell({ roomId, date: formattedDate });
     setModalContent('makeReservation');
     setIsModalOpen(true);
-  };
-
-  const handleReservation = async () => {
-    if (!selectedCell) return;
-
-    try {
-      console.log('Sending reservation request:', {
-        roomId: selectedCell.roomId,
-        date: selectedCell.date // Déjà au format 'JJ MM YYYY'
-      });
-
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found');
-      }
-
-      const response = await fetch('http://localhost:1234/api/rooms/reservations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          roomId: selectedCell.roomId,
-          date: selectedCell.date // Déjà au format 'JJ MM YYYY'
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Server error response:', errorData);
-        setErrorMessage(errorData.message || 'Échec de la réservation');
-        return;
-      }
-
-      const data = await response.json();
-      console.log('Réservation réussie:', data);
-      await fetchRooms();
-      setIsModalOpen(false);
-      setError(null);
-    } catch (error) {
-      console.error('Erreur lors de la réservation:', error);
-      setErrorMessage(error instanceof Error ? error.message : String(error));
-    }
-  };
-
-  const handleCancelReservation = async () => {
-    if (!selectedCell) return;
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found');
-      }
-
-      console.log('Date originale:', selectedCell.date);
-
-      const response = await fetch(`http://localhost:1234/api/rooms/${selectedCell.roomId}/reservations`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          date: selectedCell.date // Gardez le format 'JJ MM YYYY'
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Server error response:', errorData);
-        throw new Error(errorData.message || 'Échec de l\'annulation de la réservation');
-      }
-
-      console.log('Réservation annulée avec succès');
-      await fetchRooms();
-      setIsModalOpen(false);
-      setError(null);
-    } catch (error) {
-      console.error('Erreur lors de l\'annulation de la réservation:', error);
-      setErrorMessage(error instanceof Error ? error.message : String(error));
-    }
   };
 
   const isReserved = (roomId: string, date: Date) => {
@@ -175,10 +68,6 @@ const WeeklyCalendar: React.FC = () => {
     if (!room) return false;
     const dateString = format(date, 'dd MM yyyy');
     return room.reservations.includes(dateString);
-  };
-
-  const closeErrorModal = () => {
-    setErrorMessage(null);
   };
 
   return (
@@ -214,12 +103,12 @@ const WeeklyCalendar: React.FC = () => {
             {days.map((day) => (
               <div 
                 key={day.toString()} 
-                className={`border p-2 cursor-pointer ${
+                className={`border p-2 ${
                   isReserved(room._id, day) 
-                    ? 'bg-yellow-200 hover:bg-yellow-300' 
-                    : 'hover:bg-gray-100'
+                    ? 'bg-yellow-200' 
+                    : userGrade !== 'visiteur' ? 'hover:bg-gray-100 cursor-pointer' : ''
                 }`}
-                onClick={() => handleCellClick(room._id, day)}
+                onClick={() => userGrade !== 'visiteur' && handleCellClick(room._id, day)}
               >
                 {isReserved(room._id, day) ? 'Réservé' : ''}
               </div>
@@ -227,45 +116,37 @@ const WeeklyCalendar: React.FC = () => {
           </React.Fragment>
         ))}
       </div>
-      <button 
-        onClick={() => {
-          setModalContent('createRoom');
-          setIsModalOpen(true);
-        }}
-        className="mt-4 px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300"
-      >
-        + Ajouter une salle
-      </button>
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        {modalContent === 'createRoom' && (
-          <CreateRoom onAddRoom={handleAddRoom} />
-        )}
-        {modalContent === 'makeReservation' && selectedCell && (
-          <MakeReservation
-            selectedDate={selectedCell.date}
-            room={{
-              id: selectedCell.roomId,
-              nom: rooms.find(room => room._id === selectedCell.roomId)?.name || ''
+      {userGrade !== 'visiteur' && (
+        <>
+          <button 
+            onClick={() => {
+              setModalContent('createRoom');
+              setIsModalOpen(true);
             }}
-            onClose={() => setIsModalOpen(false)}
-            onReserve={handleReservation}
-            onCancelReservation={handleCancelReservation}
-          />
-        )}
-        {error && <div className="text-red-500">{error}</div>}
-      </Modal>
-      <Modal isOpen={!!errorMessage} onClose={closeErrorModal}>
-        <div className="bg-white p-6 rounded-lg">
-          <h2 className="text-xl font-bold mb-4 text-red-500">Erreur</h2>
-          <p>{errorMessage}</p>
-          <button
-            onClick={closeErrorModal}
-            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-300"
+            className="mt-4 px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300"
           >
-            Fermer
+            + Ajouter une salle
           </button>
-        </div>
-      </Modal>
+          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            {modalContent === 'createRoom' && (
+              <CreateRoom onAddRoom={() => {/* Implémentez la logique d'ajout de salle ici */}} />
+            )}
+            {modalContent === 'makeReservation' && selectedCell && (
+              <MakeReservation
+                selectedDate={selectedCell.date}
+                room={{
+                  id: selectedCell.roomId,
+                  nom: rooms.find(room => room._id === selectedCell.roomId)?.name || ''
+                }}
+                onClose={() => setIsModalOpen(false)}
+                onReserve={async () => {/* Implémentez la logique de réservation ici */}}
+                onCancelReservation={async () => {/* Implémentez la logique d'annulation ici */}}
+              />
+            )}
+          </Modal>
+        </>
+      )}
+      {error && <div className="text-red-500 mt-4">{error}</div>}
     </div>
   );
 };

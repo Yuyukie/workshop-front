@@ -9,20 +9,14 @@ interface Room {
   _id: string;
   name: string;
   equipment: string;
-}
-
-interface Reservation {
-  _id: string;
-  roomId: string;
-  date: Date;
+  reservations: string[]; // Ajouté pour stocker les réservations
 }
 
 const WeeklyCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCell, setSelectedCell] = useState<{ roomId: string, date: Date } | null>(null);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [selectedCell, setSelectedCell] = useState<{ roomId: string, date: string } | null>(null);
   const [modalContent, setModalContent] = useState<'createRoom' | 'makeReservation' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,48 +36,9 @@ const WeeklyCalendar: React.FC = () => {
     }
   }, []);
 
-  const fetchReservations = useCallback(async () => {
-    if (rooms.length === 0) return;
-
-    try {
-      const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-      const weekEnd = addDays(weekStart, 6);
-      console.log('Fetching reservations for:', weekStart, 'to', weekEnd);
-      const startParam = encodeURIComponent(weekStart.toISOString().split('T')[0]);
-      const endParam = encodeURIComponent(weekEnd.toISOString().split('T')[0]);
-      const response = await fetch(`http://localhost:1234/api/rooms/reservations?start=${startParam}&end=${endParam}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Received reservations:', data);
-        const localReservations = data.map((res: { date: string; [key: string]: any }) => ({
-          ...res,
-          date: new Date(res.date)
-        }));
-        setReservations(localReservations);
-      } else {
-        const errorData = await response.json();
-        console.error('Server responded with an error:', errorData);
-        throw new Error(errorData.message || 'Erreur lors de la récupération des réservations');
-      }
-    } catch (error) {
-      console.error('Error fetching reservations:', error);
-      setError(error instanceof Error ? error.message : String(error));
-    }
-  }, [currentDate, rooms]);
-
   useEffect(() => {
     fetchRooms();
-  }, []);
-
-  useEffect(() => {
-    if (rooms.length > 0) {
-      fetchReservations();
-    }
-  }, [currentDate, rooms, fetchReservations]);
+  }, [fetchRooms]);
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -118,7 +73,6 @@ const WeeklyCalendar: React.FC = () => {
       console.log('Salle créée avec succès:', data);
       setIsModalOpen(false);
       await fetchRooms();
-      fetchReservations();
       setError(null);
     } catch (error) {
       console.error('Error adding room:', error);
@@ -127,7 +81,8 @@ const WeeklyCalendar: React.FC = () => {
   };
 
   const handleCellClick = (roomId: string, date: Date) => {
-    setSelectedCell({ roomId, date });
+    const formattedDate = format(date, 'dd MM yyyy');
+    setSelectedCell({ roomId, date: formattedDate });
     setModalContent('makeReservation');
     setIsModalOpen(true);
   };
@@ -136,29 +91,37 @@ const WeeklyCalendar: React.FC = () => {
     if (!selectedCell) return;
 
     try {
-      const reservationDate = new Date(selectedCell.date);
-      reservationDate.setUTCHours(0, 0, 0, 0);
+      console.log('Sending reservation request:', {
+        roomId: selectedCell.roomId,
+        date: selectedCell.date // Déjà au format 'JJ MM YYYY'
+      });
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
 
       const response = await fetch('http://localhost:1234/api/rooms/reservations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           roomId: selectedCell.roomId,
-          date: reservationDate.toISOString()
+          date: selectedCell.date // Déjà au format 'JJ MM YYYY'
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Server error response:', errorData);
         throw new Error(errorData.message || 'Échec de la réservation');
       }
 
       const data = await response.json();
       console.log('Réservation réussie:', data);
-      fetchReservations();
+      await fetchRooms();
       setIsModalOpen(false);
       setError(null);
     } catch (error) {
@@ -168,16 +131,10 @@ const WeeklyCalendar: React.FC = () => {
   };
 
   const isReserved = (roomId: string, date: Date) => {
-    const checkDate = new Date(date);
-    checkDate.setUTCHours(0, 0, 0, 0);
-    return reservations.some(res => 
-      res.roomId === roomId && 
-      new Date(res.date).toISOString().split('T')[0] === checkDate.toISOString().split('T')[0]
-    );
-  };
-
-  const formatLocalDate = (date: Date) => {
-    return format(date, 'dd/MM/yyyy HH:mm', { locale: fr });
+    const room = rooms.find(r => r._id === roomId);
+    if (!room) return false;
+    const dateString = format(date, 'dd MM yyyy');
+    return room.reservations.includes(dateString);
   };
 
   return (
@@ -220,11 +177,7 @@ const WeeklyCalendar: React.FC = () => {
                 }`}
                 onClick={() => handleCellClick(room._id, day)}
               >
-                {isReserved(room._id, day) ? (
-                  <span title={formatLocalDate(reservations.find(res => res.roomId === room._id && res.date.toDateString() === day.toDateString())?.date || day)}>
-                    Réservé
-                  </span>
-                ) : ''}
+                {isReserved(room._id, day) ? 'Réservé' : ''}
               </div>
             ))}
           </React.Fragment>
@@ -246,6 +199,11 @@ const WeeklyCalendar: React.FC = () => {
         {modalContent === 'makeReservation' && selectedCell && (
           <MakeReservation
             selectedDate={selectedCell.date}
+            room={{
+              id: selectedCell.roomId,
+              nom: rooms.find(room => room._id === selectedCell.roomId)?.name || ''
+            }}
+            onClose={() => setIsModalOpen(false)}
             onReserve={handleReservation}
           />
         )}

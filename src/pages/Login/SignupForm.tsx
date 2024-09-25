@@ -54,7 +54,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSignupSuccess }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:1234/api/auth/signup', {
+      const response = await fetch('http://localhost:1234/api/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

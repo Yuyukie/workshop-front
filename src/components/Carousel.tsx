@@ -81,7 +81,7 @@ const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
   }
 
   return (
-    <div className="relative w-full h-64 overflow-hidden rounded-lg">
+    <div className="relative w-full h-96 overflow-hidden rounded-lg"> {/* Hauteur augmentée à h-96 */}
       {images.map((image, index) => (
         <div
           key={image._id}
@@ -101,10 +101,6 @@ const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
               <p>Image non disponible</p>
             </div>
           )}
-          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2">
-            <h3 className="text-lg font-bold">{image.title}</h3>
-            <p className="text-sm">{image.description}</p>
-          </div>
         </div>
       ))}
       <div className="absolute bottom-4 left-0 right-0 flex justify-center">

@@ -19,36 +19,39 @@ const Banner: React.FC<BannerProps> = ({ onRequestGrade }) => {
 
   return (
     <header className="bg-white shadow-md">
-      <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-        <Link to="/accueil" className="flex items-center">
+      <div className="container mx-auto px-4 py-2 flex items-center">
+        <Link to="/accueil" className="flex items-center flex-shrink-0">
           <img src={logo} alt="Logo" className="h-12 w-auto mr-2" />
           <span className="text-xl font-bold text-gray-800">Post & Share</span>
         </Link>
-        <div className="flex items-center">
+        <div className="flex-grow flex justify-center items-center">
           {userGrade === 'visiteur' && onRequestGrade && (
-            <button 
-              onClick={onRequestGrade}
-              className="mr-4 px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300"
-            >
-              Demander le grade utilisateur
-            </button>
+            <div className="text-center">
+              <p className="text-gray-800 mb-2">Tu joues un rôle pour EPSI ? Demande tes droits !</p>
+              <button 
+                onClick={onRequestGrade}
+                className="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300"
+              >
+                Demander le grade utilisateur
+              </button>
+            </div>
           )}
-          <div className="relative">
-            <button 
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 focus:outline-none"
-            >
-              <span className="text-sm font-medium">Menu</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </button>
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Se déconnecter</button>
-              </div>
-            )}
-          </div>
+        </div>
+        <div className="relative flex-shrink-0">
+          <button 
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+          >
+            <span className="text-sm font-medium">Menu</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          {showDropdown && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+              <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Se déconnecter</button>
+            </div>
+          )}
         </div>
       </div>
     </header>

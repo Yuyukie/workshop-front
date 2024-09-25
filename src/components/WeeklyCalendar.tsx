@@ -132,6 +132,44 @@ const WeeklyCalendar: React.FC = () => {
     }
   };
 
+  const handleCancelReservation = async () => {
+    if (!selectedCell) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      console.log('Date originale:', selectedCell.date);
+
+      const response = await fetch(`http://localhost:1234/api/rooms/${selectedCell.roomId}/reservations`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          date: selectedCell.date // Gardez le format 'JJ MM YYYY'
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error response:', errorData);
+        throw new Error(errorData.message || 'Échec de l\'annulation de la réservation');
+      }
+
+      console.log('Réservation annulée avec succès');
+      await fetchRooms();
+      setIsModalOpen(false);
+      setError(null);
+    } catch (error) {
+      console.error('Erreur lors de l\'annulation de la réservation:', error);
+      setErrorMessage(error instanceof Error ? error.message : String(error));
+    }
+  };
+
   const isReserved = (roomId: string, date: Date) => {
     const room = rooms.find(r => r._id === roomId);
     if (!room) return false;
@@ -211,6 +249,7 @@ const WeeklyCalendar: React.FC = () => {
             }}
             onClose={() => setIsModalOpen(false)}
             onReserve={handleReservation}
+            onCancelReservation={handleCancelReservation}
           />
         )}
         {error && <div className="text-red-500">{error}</div>}

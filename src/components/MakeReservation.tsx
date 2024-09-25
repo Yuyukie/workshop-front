@@ -6,9 +6,10 @@ interface MakeReservationProps {
   room: { id: string; nom: string };
   onClose: () => void;
   onReserve: () => Promise<void>;
+  onCancelReservation?: () => Promise<void>; // Rendu optionnel
 }
 
-const MakeReservation: React.FC<MakeReservationProps> = ({ selectedDate, room, onClose, onReserve }) => {
+const MakeReservation: React.FC<MakeReservationProps> = ({ selectedDate, room, onClose, onReserve, onCancelReservation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +36,25 @@ const MakeReservation: React.FC<MakeReservationProps> = ({ selectedDate, room, o
     }
   };
 
+  const handleCancelReservation = async () => {
+    if (!onCancelReservation) {
+      setError("La fonction d'annulation n'est pas disponible");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await onCancelReservation();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue lors de l\'annulation de la réservation');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg">
       <h2 className="text-xl font-bold mb-4">Réserver {room.nom}</h2>
@@ -54,8 +74,17 @@ const MakeReservation: React.FC<MakeReservationProps> = ({ selectedDate, room, o
         className="mt-2 text-gray-600"
         disabled={isLoading}
       >
-        Annuler
+        Fermer
       </button>
+      {onCancelReservation && (
+        <button
+          onClick={handleCancelReservation}
+          className="bg-red-500 text-white px-4 py-2 rounded mt-4 ml-2"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Annulation en cours...' : 'Annuler la réservation'}
+        </button>
+      )}
     </div>
   );
 };

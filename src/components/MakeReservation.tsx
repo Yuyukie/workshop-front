@@ -48,7 +48,7 @@ const MakeReservation: React.FC<MakeReservationProps> = ({ selectedDate, room, o
           {isLoading ? 'Réservation en cours...' : 'Confirmer la réservation'}
         </button>
       </form>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 mt-2">{error}</p>}
       <button
         onClick={onClose}
         className="mt-2 text-gray-600"

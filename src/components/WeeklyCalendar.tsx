@@ -19,6 +19,7 @@ const WeeklyCalendar: React.FC = () => {
   const [selectedCell, setSelectedCell] = useState<{ roomId: string, date: string } | null>(null);
   const [modalContent, setModalContent] = useState<'createRoom' | 'makeReservation' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchRooms = useCallback(async () => {
     try {
@@ -116,7 +117,8 @@ const WeeklyCalendar: React.FC = () => {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Server error response:', errorData);
-        throw new Error(errorData.message || 'Échec de la réservation');
+        setErrorMessage(errorData.message || 'Échec de la réservation');
+        return;
       }
 
       const data = await response.json();
@@ -126,7 +128,7 @@ const WeeklyCalendar: React.FC = () => {
       setError(null);
     } catch (error) {
       console.error('Erreur lors de la réservation:', error);
-      setError(error instanceof Error ? error.message : String(error));
+      setErrorMessage(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -135,6 +137,10 @@ const WeeklyCalendar: React.FC = () => {
     if (!room) return false;
     const dateString = format(date, 'dd MM yyyy');
     return room.reservations.includes(dateString);
+  };
+
+  const closeErrorModal = () => {
+    setErrorMessage(null);
   };
 
   return (
@@ -208,6 +214,18 @@ const WeeklyCalendar: React.FC = () => {
           />
         )}
         {error && <div className="text-red-500">{error}</div>}
+      </Modal>
+      <Modal isOpen={!!errorMessage} onClose={closeErrorModal}>
+        <div className="bg-white p-6 rounded-lg">
+          <h2 className="text-xl font-bold mb-4 text-red-500">Erreur</h2>
+          <p>{errorMessage}</p>
+          <button
+            onClick={closeErrorModal}
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-300"
+          >
+            Fermer
+          </button>
+        </div>
       </Modal>
     </div>
   );

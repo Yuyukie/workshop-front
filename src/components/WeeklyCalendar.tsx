@@ -43,6 +43,22 @@ const WeeklyCalendar: React.FC = () => {
     // Récupérer le grade de l'utilisateur depuis le localStorage
     const grade = localStorage.getItem('userGrade') || 'visiteur';
     setUserGrade(grade);
+
+    // Ajout du test pour vérifier le grade
+    console.log('Grade de l\'utilisateur:', grade);
+    switch(grade) {
+      case 'visiteur':
+        console.log('L\'utilisateur est un visiteur');
+        break;
+      case 'utilisateur':
+        console.log('L\'utilisateur est un utilisateur standard');
+        break;
+      case 'admin':
+        console.log('L\'utilisateur est un administrateur');
+        break;
+      default:
+        console.log('Grade non reconnu');
+    }
   }, [fetchRooms]);
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -61,6 +77,52 @@ const WeeklyCalendar: React.FC = () => {
     setSelectedCell({ roomId, date: formattedDate });
     setModalContent('makeReservation');
     setIsModalOpen(true);
+  };
+
+  const makeReservation = async (roomId: string, date: string) => {
+    try {
+      const response = await fetch('http://localhost:1234/api/rooms/reservations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ roomId, date })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la réservation');
+      }
+
+      await fetchRooms(); // Rafraîchir les données des salles
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la réservation:', error);
+      setError('Erreur lors de la réservation');
+    }
+  };
+
+  const cancelReservation = async (roomId: string, date: string) => {
+    try {
+      const response = await fetch(`http://localhost:1234/api/rooms/${roomId}/reservations`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ date })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'annulation de la réservation');
+      }
+
+      await fetchRooms(); // Rafraîchir les données des salles
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de l\'annulation de la réservation:', error);
+      setError('Erreur lors de l\'annulation de la réservation');
+    }
   };
 
   const isReserved = (roomId: string, date: Date) => {
@@ -108,7 +170,7 @@ const WeeklyCalendar: React.FC = () => {
                     ? 'bg-yellow-200' 
                     : userGrade !== 'visiteur' ? 'hover:bg-gray-100 cursor-pointer' : ''
                 }`}
-                onClick={() => userGrade !== 'visiteur' && handleCellClick(room._id, day)}
+                onClick={() => handleCellClick(room._id, day)}
               >
                 {isReserved(room._id, day) ? 'Réservé' : ''}
               </div>
@@ -139,8 +201,8 @@ const WeeklyCalendar: React.FC = () => {
                   nom: rooms.find(room => room._id === selectedCell.roomId)?.name || ''
                 }}
                 onClose={() => setIsModalOpen(false)}
-                onReserve={async () => {/* Implémentez la logique de réservation ici */}}
-                onCancelReservation={async () => {/* Implémentez la logique d'annulation ici */}}
+                onReserve={() => makeReservation(selectedCell.roomId, selectedCell.date)}
+                onCancelReservation={() => cancelReservation(selectedCell.roomId, selectedCell.date)}
               />
             )}
           </Modal>

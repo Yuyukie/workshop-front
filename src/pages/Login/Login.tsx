@@ -3,11 +3,14 @@ import Modal from '../../components/Modal';
 import LoginForm from './LoginForm';
 import SignupForm from './SignupForm';
 import backgroundImage from '../../assets/Logo_site_web.png';
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const navigate = useNavigate();
 
   const handleSignupSuccess = () => {
     setIsSignupModalOpen(false);
@@ -17,6 +20,35 @@ const Login: React.FC = () => {
   const handleConfirmationClose = () => {
     setIsConfirmationModalOpen(false);
     setIsLoginModalOpen(true);
+  };
+
+  const handleLoginSuccess = async (email: string, password: string) => {
+    try {
+      const response = await fetch('http://localhost:1234/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur de connexion');
+      }
+
+      const data = await response.json();
+
+      // Stockage du token et du grade dans le localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userGrade', data.grade);
+
+      // Redirection vers la page d'accueil pour tous les utilisateurs
+      setIsLoginModalOpen(false);
+      navigate('/accueil');
+    } catch (err) {
+      setLoginError('Erreur lors de la connexion. Veuillez réessayer.');
+      console.error('Erreur de connexion:', err);
+    }
   };
 
   return (
@@ -47,7 +79,7 @@ const Login: React.FC = () => {
       </div>
 
       <Modal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)}>
-        <LoginForm />
+        <LoginForm onLoginSuccess={handleLoginSuccess} error={loginError} />
       </Modal>
 
       <Modal isOpen={isSignupModalOpen} onClose={() => setIsSignupModalOpen(false)}>

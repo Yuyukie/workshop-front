@@ -81,24 +81,34 @@ const WeeklyCalendar: React.FC = () => {
 
   const makeReservation = async (roomId: string, date: string) => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token d\'authentification non trouvé');
+      }
+
       const response = await fetch('http://localhost:1234/api/rooms/reservations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ roomId, date })
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la réservation');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de la réservation');
       }
 
+      const data = await response.json();
+      console.log('Réservation réussie:', data);
       await fetchRooms(); // Rafraîchir les données des salles
       setIsModalOpen(false);
     } catch (error) {
       console.error('Erreur lors de la réservation:', error);
-      setError('Erreur lors de la réservation');
+      setError(
+        error instanceof Error ? error.message : 'Erreur lors de la réservation'
+      );
     }
   };
 
@@ -180,17 +190,19 @@ const WeeklyCalendar: React.FC = () => {
       </div>
       {userGrade !== 'visiteur' && (
         <>
-          <button 
-            onClick={() => {
-              setModalContent('createRoom');
-              setIsModalOpen(true);
-            }}
-            className="mt-4 px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300"
-          >
-            + Ajouter une salle
-          </button>
+          {userGrade === 'admin' && (
+            <button 
+              onClick={() => {
+                setModalContent('createRoom');
+                setIsModalOpen(true);
+              }}
+              className="mt-4 px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300"
+            >
+              + Ajouter une salle
+            </button>
+          )}
           <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            {modalContent === 'createRoom' && (
+            {modalContent === 'createRoom' && userGrade === 'admin' && (
               <CreateRoom onAddRoom={() => {/* Implémentez la logique d'ajout de salle ici */}} />
             )}
             {modalContent === 'makeReservation' && selectedCell && (

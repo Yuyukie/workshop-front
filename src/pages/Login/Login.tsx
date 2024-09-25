@@ -33,7 +33,8 @@ const Login: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Erreur de connexion');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur de connexion');
       }
 
       const data = await response.json();
@@ -46,7 +47,7 @@ const Login: React.FC = () => {
       setIsLoginModalOpen(false);
       navigate('/accueil');
     } catch (err) {
-      setLoginError('Erreur lors de la connexion. Veuillez réessayer.');
+      setLoginError(err instanceof Error ? err.message : 'Erreur lors de la connexion. Veuillez réessayer.');
       console.error('Erreur de connexion:', err);
     }
   };

@@ -39,11 +39,9 @@ const Login: React.FC = () => {
 
       const data = await response.json();
 
-      // Stockage du token et du grade dans le localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('userGrade', data.grade);
 
-      // Redirection vers la page d'accueil pour tous les utilisateurs
       setIsLoginModalOpen(false);
       navigate('/accueil');
     } catch (err) {

@@ -114,39 +114,44 @@ const Accueil: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-blue-400 to-purple-500">
+    <div className="flex flex-col min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-[#25a8a6] to-[#efa872]">
       <Banner onRequestGrade={handleRequestGrade} />
       <main className="flex-grow w-full px-4 py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white p-8 rounded-2xl shadow-lg w-full mb-8">
-            <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">Post & Share</h1>
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Bienvenue sur votre espace</h2>
-            
+        <div className="max-w-7xl mx-auto space-y-8">
+          <section className="text-white">
+            <h1 className="text-4xl font-bold mb-2 text-center">Post & Share</h1>
+            <h2 className="text-2xl font-bold mb-4 text-center">Bienvenue sur votre espace</h2>
+            <p className="text-lg text-center mb-6">Vous êtes maintenant connecté à votre compte.</p>
+          </section>
+
+          <section>
             <Carousel refreshTrigger={refreshCarousel} />
-            
-            <p className="text-lg text-gray-600 text-center my-8">Vous êtes maintenant connecté à votre compte.</p>
-            {(userGrade === 'utilisateur' || userGrade === 'admin') && (
-              <div className="flex justify-center mb-8">
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  className="px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-                >
-                  Commencer à partager
-                </button>
-              </div>
-            )}
+          </section>
+
+          {(userGrade === 'utilisateur' || userGrade === 'admin') && (
+            <section className="text-center">
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="px-6 py-3 bg-[#25a8a6] text-white rounded-full hover:bg-opacity-80 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#25a8a6] focus:ring-opacity-50"
+              >
+                Commencer à partager
+              </button>
+            </section>
+          )}
+
+          <section>
             <WeeklyCalendar />
-          </div>
+          </section>
 
           {userGrade === 'admin' && gradeRequests.length > 0 && (
-            <div className="mt-4 text-center">
+            <section className="text-center">
               <button 
                 onClick={() => setShowGradeRequestModal(true)}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition duration-300"
+                className="px-4 py-2 bg-[#efa872] text-white rounded-full hover:bg-opacity-80 transition duration-300"
               >
                 Demandes de grade en attente ({gradeRequests.length})
               </button>
-            </div>
+            </section>
           )}
         </div>
       </main>
@@ -155,19 +160,19 @@ const Accueil: React.FC = () => {
         <ImageUploadForm onSubmit={handleImageUpload} />
       </Modal>
       <Modal isOpen={showGradeRequestModal} onClose={() => setShowGradeRequestModal(false)}>
-        <h2 className="text-xl font-bold mb-4">Demandes de grade en attente</h2>
+        <h2 className="text-xl font-bold mb-4 text-[#25a8a6]">Demandes de grade en attente</h2>
         {gradeRequests.map(user => (
           <div key={user._id} className="mb-4">
             <p>{user.email} demande le grade utilisateur</p>
             <button 
               onClick={() => handleApproveGrade(user._id, true)}
-              className="mr-2 px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300"
+              className="mr-2 px-4 py-2 bg-[#25a8a6] text-white rounded-full hover:bg-opacity-80 transition duration-300"
             >
               Approuver
             </button>
             <button 
               onClick={() => handleApproveGrade(user._id, false)}
-              className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-300"
+              className="px-4 py-2 bg-[#cf5e60] text-white rounded-full hover:bg-opacity-80 transition duration-300"
             >
               Refuser
             </button>

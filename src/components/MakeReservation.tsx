@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { parse, isValid } from 'date-fns';
+import { parse, isValid, format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface MakeReservationProps {
   selectedDate: string;  // Changé de Date à string
@@ -55,36 +56,40 @@ const MakeReservation: React.FC<MakeReservationProps> = ({ selectedDate, room, o
     }
   };
 
+  const formattedDate = format(parse(selectedDate, 'dd MM yyyy', new Date()), 'dd MMMM yyyy', { locale: fr });
+
   return (
-    <div className="bg-white p-6 rounded-lg">
-      <h2 className="text-xl font-bold mb-4">Réserver {room.nom}</h2>
-      <p>Date : {selectedDate}</p> {/* selectedDate est déjà au format 'JJ MM YYYY' */}
-      <form onSubmit={handleSubmit}>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
-          disabled={isLoading}
-        >
-          {isLoading ? 'Réservation en cours...' : 'Confirmer la réservation'}
-        </button>
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold mb-4 text-[#25a8a6]">{room.nom}</h2>
+      <p className="text-lg mb-6 text-gray-700">Date : {formattedDate}</p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex justify-between space-x-4">
+          <button
+            type="submit"
+            className="flex-1 bg-[#25a8a6] text-white px-4 py-2 rounded-full hover:bg-opacity-80 transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#25a8a6] focus:ring-opacity-50"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Réservation en cours...' : 'Confirmer la réservation'}
+          </button>
+          {onCancelReservation && (
+            <button
+              type="button"
+              onClick={handleCancelReservation}
+              className="flex-1 bg-[#cf5e60] text-white px-4 py-2 rounded-full hover:bg-opacity-80 transition duration-300 focus:outline-none focus:ring-2 focus:ring-[#cf5e60] focus:ring-opacity-50"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Annulation en cours...' : 'Annuler la réservation'}
+            </button>
+          )}
+        </div>
       </form>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {error && <p className="text-[#cf5e60] text-sm mt-2">{error}</p>}
       <button
         onClick={onClose}
-        className="mt-2 text-gray-600"
-        disabled={isLoading}
+        className="mt-4 text-[#25a8a6] hover:text-[#efa872] transition duration-300"
       >
         Fermer
       </button>
-      {onCancelReservation && (
-        <button
-          onClick={handleCancelReservation}
-          className="bg-red-500 text-white px-4 py-2 rounded mt-4 ml-2"
-          disabled={isLoading}
-        >
-          {isLoading ? 'Annulation en cours...' : 'Annuler la réservation'}
-        </button>
-      )}
     </div>
   );
 };

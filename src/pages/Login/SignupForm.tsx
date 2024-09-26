@@ -84,54 +84,58 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSignupSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="email" className="block mb-2">Email</label>
+        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">Email</label>
         <input 
           type="email" 
           id="email" 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-3 py-2 border rounded" 
+          className="w-full px-3 py-2 bg-[#25a8a6] bg-opacity-10 border border-[#25a8a6] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#25a8a6] focus:border-[#25a8a6] text-gray-900 placeholder-gray-500 valid:bg-[#25a8a6] valid:bg-opacity-20" 
+          placeholder="Votre email"
         />
       </div>
       <div>
-        <label htmlFor="confirmEmail" className="block mb-2">Confirmer Email</label>
+        <label htmlFor="confirmEmail" className="block mb-2 text-sm font-medium text-gray-700">Confirmer Email</label>
         <input 
           type="email" 
           id="confirmEmail" 
           value={confirmEmail}
           onChange={(e) => setConfirmEmail(e.target.value)}
-          className="w-full px-3 py-2 border rounded" 
+          className="w-full px-3 py-2 bg-[#25a8a6] bg-opacity-10 border border-[#25a8a6] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#25a8a6] focus:border-[#25a8a6] text-gray-900 placeholder-gray-500 valid:bg-[#25a8a6] valid:bg-opacity-20" 
+          placeholder="Confirmez votre email"
         />
       </div>
       <div className="relative">
-        <label htmlFor="password" className="block mb-2">Mot de passe</label>
+        <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">Mot de passe</label>
         <input 
           type={showPassword ? "text" : "password"}
           id="password" 
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-3 py-2 border rounded pr-10" 
+          className="w-full px-3 py-2 bg-[#efa872] bg-opacity-10 border border-[#efa872] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#efa872] focus:border-[#efa872] text-gray-900 placeholder-gray-500 pr-10 valid:bg-[#efa872] valid:bg-opacity-20" 
+          placeholder="Votre mot de passe"
         />
         <button 
           type="button"
-          className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-6"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-gray-500 mt-6"
           onClick={() => setShowPassword(!showPassword)}
         >
           {showPassword ? <FaEyeSlash /> : <FaEye />}
         </button>
       </div>
       <div className="relative">
-        <label htmlFor="confirmPassword" className="block mb-2">Confirmer le mot de passe</label>
+        <label htmlFor="confirmPassword" className="block mb-2 text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
         <input 
           type={showConfirmPassword ? "text" : "password"}
           id="confirmPassword" 
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full px-3 py-2 border rounded pr-10" 
+          className="w-full px-3 py-2 bg-[#efa872] bg-opacity-10 border border-[#efa872] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#efa872] focus:border-[#efa872] text-gray-900 placeholder-gray-500 pr-10 valid:bg-[#efa872] valid:bg-opacity-20" 
+          placeholder="Confirmez votre mot de passe"
         />
         <button 
           type="button"
-          className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-6"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-gray-500 mt-6"
           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
         >
           {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
@@ -141,11 +145,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSignupSuccess }) => {
         Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.
       </p>
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div className="bg-[#cf5e60] bg-opacity-20 border border-[#cf5e60] text-[#cf5e60] px-4 py-3 rounded relative" role="alert">
           <span className="block sm:inline">{error}</span>
         </div>
       )}
-      <button type="submit" className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+      <button type="submit" className="w-full px-4 py-2 bg-[#25a8a6] text-white rounded-md hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-[#25a8a6] focus:ring-offset-2">
         Créer un compte
       </button>
     </form>

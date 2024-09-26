@@ -51,26 +51,33 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-400 to-purple-500">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-[#25a8a6] to-[#efa872]">
       <div className="w-full max-w-4xl mb-8 flex flex-col items-center">
-        <div className="relative">
-          <img src={backgroundImage} alt="Logo Post & Share" className="w-full h-96 object-contain rounded-3xl" />
-          <div className="absolute inset-0 rounded-3xl shadow-custom"></div>
+        <div className="relative w-full h-96">
+          <img 
+            src={backgroundImage} 
+            alt="Logo Post & Share" 
+            className="w-full h-full object-contain absolute inset-0"
+            style={{
+              maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0))',
+              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0))'
+            }}
+          />
         </div>
-        <h1 className="text-6xl font-bold text-white text-shadow mt-4">Post & Share</h1>
+        <h1 className="text-6xl font-bold text-white mt-4 text-shadow-lg">Post & Share</h1>
       </div>
 
       <div className="bg-white p-8 rounded-2xl shadow-lg w-96 mx-auto">
         <div className="space-y-4">
           <button 
             onClick={() => setIsLoginModalOpen(true)} 
-            className="w-full px-4 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            className="w-full px-4 py-3 bg-[#25a8a6] text-white rounded-full hover:bg-opacity-80 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#25a8a6] focus:ring-opacity-50"
           >
             Se connecter
           </button>
           <button 
             onClick={() => setIsSignupModalOpen(true)} 
-            className="w-full px-4 py-3 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+            className="w-full px-4 py-3 bg-[#efa872] text-white rounded-full hover:bg-opacity-80 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#efa872] focus:ring-opacity-50"
           >
             Créer un compte
           </button>
@@ -87,11 +94,11 @@ const Login: React.FC = () => {
 
       <Modal isOpen={isConfirmationModalOpen} onClose={handleConfirmationClose}>
         <div className="p-6 text-center">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Compte créé avec succès!</h2>
+          <h2 className="text-2xl font-bold mb-4 text-[#25a8a6]">Compte créé avec succès!</h2>
           <p className="mb-6 text-gray-600">Votre compte a été créé. Vous pouvez maintenant vous connecter.</p>
           <button 
             onClick={handleConfirmationClose}
-            className="px-6 py-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+            className="px-6 py-3 bg-[#efa872] text-white rounded-full hover:bg-opacity-80 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#efa872] focus:ring-opacity-50"
           >
             Aller à la page de connexion
           </button>

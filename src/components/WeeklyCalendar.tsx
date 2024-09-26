@@ -206,94 +206,99 @@ const WeeklyCalendar: React.FC = () => {
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-lg">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-6">
         <button 
           onClick={() => changeWeek(-1)}
-          className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300"
+          className="px-4 py-2 bg-[#25a8a6] text-white rounded-full hover:bg-opacity-80 transition duration-300"
         >
-          Semaine précédente
+          &lt; Semaine précédente
         </button>
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-3xl font-bold text-[#25a8a6]">
           {format(currentDate, 'MMMM yyyy', { locale: fr })}
         </h2>
         <button 
           onClick={() => changeWeek(1)}
-          className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300"
+          className="px-4 py-2 bg-[#25a8a6] text-white rounded-full hover:bg-opacity-80 transition duration-300"
         >
-          Semaine suivante
+          Semaine suivante &gt;
         </button>
       </div>
-      <div className="grid grid-cols-8 gap-2">
-        <div className="font-bold text-center">Salles</div>
+      <div className="grid grid-cols-8 gap-px bg-gray-200 rounded-lg overflow-hidden">
+        <div className="font-bold text-center bg-[#25a8a6] text-white p-2">Salles</div>
         {days.map((day) => (
-          <div key={day.toString()} className="font-bold text-center">
-            {format(day, 'EEEE', { locale: fr })}
-            <div>{format(day, 'd')}</div>
+          <div key={day.toString()} className="font-bold text-center bg-[#25a8a6] text-white p-2">
+            <div className="text-sm">{format(day, 'EEEE', { locale: fr })}</div>
+            <div className="text-lg">{format(day, 'd')}</div>
           </div>
         ))}
         {rooms.map((room) => (
           <React.Fragment key={room._id}>
             <div 
-              className="font-bold cursor-pointer hover:text-blue-500"
+              className="font-bold cursor-pointer bg-[#efa872] text-white hover:bg-opacity-80 transition-colors duration-300 p-2 text-center"
               onClick={() => handleRoomClick(room)}
             >
               {room.name}
             </div>
-            {days.map((day) => (
-              <div 
-                key={day.toString()} 
-                className={`border p-2 ${
-                  isReserved(room._id, day) 
-                    ? 'bg-yellow-200' 
-                    : userGrade !== 'visiteur' ? 'hover:bg-gray-100 cursor-pointer' : ''
-                }`}
-                onClick={() => handleCellClick(room._id, day)}
-              >
-                {isReserved(room._id, day) ? 'Réservé' : ''}
-              </div>
-            ))}
+            {days.map((day) => {
+              const isReservedCell = isReserved(room._id, day);
+              return (
+                <div 
+                  key={day.toString()} 
+                  className={`p-2 text-center transition-colors duration-300 ${
+                    isReservedCell 
+                      ? 'bg-[#cf5e60] text-white' 
+                      : userGrade !== 'visiteur' 
+                        ? 'bg-[#efa872] bg-opacity-20 hover:bg-opacity-40 cursor-pointer' 
+                        : 'bg-white'
+                  }`}
+                  onClick={() => handleCellClick(room._id, day)}
+                >
+                  {isReservedCell ? 'Réservé' : ''}
+                </div>
+              );
+            })}
           </React.Fragment>
         ))}
       </div>
       {userGrade !== 'visiteur' && (
-        <>
+        <div className="mt-6 text-center">
           {userGrade === 'admin' && (
             <button 
               onClick={() => {
                 setModalContent('createRoom');
                 setIsModalOpen(true);
               }}
-              className="mt-4 px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-300"
+              className="px-6 py-3 bg-[#25a8a6] text-white rounded-full hover:bg-opacity-80 transition duration-300 shadow-md"
             >
               + Ajouter une salle
             </button>
           )}
-          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            {modalContent === 'createRoom' && userGrade === 'admin' && (
-              <CreateRoom onAddRoom={handleAddRoom} />
-            )}
-            {modalContent === 'makeReservation' && selectedCell && (
-              <MakeReservation
-                selectedDate={selectedCell.date}
-                room={{
-                  id: selectedCell.roomId,
-                  nom: rooms.find(room => room._id === selectedCell.roomId)?.name || ''
-                }}
-                onClose={() => setIsModalOpen(false)}
-                onReserve={() => makeReservation(selectedCell.roomId, selectedCell.date)}
-                onCancelReservation={() => cancelReservation(selectedCell.roomId, selectedCell.date)}
-              />
-            )}
-          </Modal>
-        </>
+        </div>
       )}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        {modalContent === 'createRoom' && userGrade === 'admin' && (
+          <CreateRoom onAddRoom={handleAddRoom} />
+        )}
+        {modalContent === 'makeReservation' && selectedCell && (
+          <MakeReservation
+            selectedDate={selectedCell.date}
+            room={{
+              id: selectedCell.roomId,
+              nom: rooms.find(room => room._id === selectedCell.roomId)?.name || ''
+            }}
+            onClose={() => setIsModalOpen(false)}
+            onReserve={() => makeReservation(selectedCell.roomId, selectedCell.date)}
+            onCancelReservation={() => cancelReservation(selectedCell.roomId, selectedCell.date)}
+          />
+        )}
+      </Modal>
       <DeleteRoomModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDeleteRoom}
         roomName={selectedRoom?.name || ''}
       />
-      {error && <div className="text-red-500 mt-4">{error}</div>}
+      {error && <div className="text-[#cf5e60] mt-4 text-center">{error}</div>}
     </div>
   );
 };

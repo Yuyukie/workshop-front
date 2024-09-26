@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 interface Image {
   _id: string;
@@ -16,7 +17,6 @@ const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const fetchImages = useCallback(async () => {
     setIsLoading(true);
@@ -38,6 +38,7 @@ const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
       const data = await response.json();
       console.log('Images reçues dans le carrousel:', data);
       setImages(data);
+      setCurrentIndex(0);
     } catch (error) {
       console.error('Error fetching images:', error);
       setError(error instanceof Error ? error.message : 'Erreur lors du chargement des images');
@@ -50,12 +51,8 @@ const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
     fetchImages();
   }, [fetchImages, refreshTrigger]);
 
-  const handleImageError = useCallback((imageId: string) => {
-    setFailedImages(prev => new Set(prev).add(imageId));
-  }, []);
-
   useEffect(() => {
-    if (images.length > 0) {
+    if (images.length > 1) {
       const interval = setInterval(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
       }, 5000);
@@ -68,20 +65,28 @@ const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
     setCurrentIndex(index);
   };
 
+  const goToPrevious = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
   if (isLoading) {
-    return <div>Chargement des images...</div>;
+    return <div className="text-white">Chargement des images...</div>;
   }
 
   if (error) {
-    return <div>Erreur : {error}</div>;
+    return <div className="text-white">Erreur : {error}</div>;
   }
 
   if (images.length === 0) {
-    return <div>Aucune image disponible</div>;
+    return <div className="text-white">Aucune image disponible</div>;
   }
 
   return (
-    <div className="relative w-full h-96 overflow-hidden rounded-lg"> {/* Hauteur augmentée à h-96 */}
+    <div className="relative w-full h-96 overflow-hidden rounded-lg">
       {images.map((image, index) => (
         <div
           key={image._id}
@@ -89,31 +94,40 @@ const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
             index === currentIndex ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          {!failedImages.has(image._id) ? (
-            <img
-              src={image.imageUrl || 'chemin/vers/image/par/defaut.jpg'}
-              alt={image.title}
-              className="w-full h-full object-cover"
-              onError={() => handleImageError(image._id)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-200">
-              <p>Image non disponible</p>
-            </div>
-          )}
+          <img
+            src={image.imageUrl}
+            alt={image.title}
+            className="w-full h-full object-f"
+          />
         </div>
       ))}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-        {images.map((_, index) => (
+      {images.length > 1 && (
+        <>
           <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`w-3 h-3 mx-1 rounded-full ${
-              index === currentIndex ? 'bg-white' : 'bg-gray-300'
-            }`}
-          />
-        ))}
-      </div>
+            onClick={goToPrevious}
+            className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all duration-300"
+          >
+            <FaChevronLeft size={24} />
+          </button>
+          <button
+            onClick={goToNext}
+            className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all duration-300"
+          >
+            <FaChevronRight size={24} />
+          </button>
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-3 h-3 mx-1 rounded-full ${
+                  index === currentIndex ? 'bg-white' : 'bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

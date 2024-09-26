@@ -24,7 +24,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, error }) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          className="mt-1 block w-full px-3 py-2 bg-[#25a8a6] bg-opacity-10 border border-[#25a8a6] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#25a8a6] focus:border-[#25a8a6] text-gray-900 placeholder-gray-500 valid:bg-[#25a8a6] valid:bg-opacity-20"
+          placeholder="Votre email"
         />
       </div>
       <div>
@@ -35,13 +36,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, error }) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          className="mt-1 block w-full px-3 py-2 bg-[#efa872] bg-opacity-10 border border-[#efa872] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#efa872] focus:border-[#efa872] text-gray-900 placeholder-gray-500 valid:bg-[#efa872] valid:bg-opacity-20"
+          placeholder="Votre mot de passe"
         />
       </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-[#cf5e60] text-sm">{error}</p>}
       <button
         type="submit"
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#25a8a6] hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#25a8a6]"
       >
         Se connecter
       </button>

@@ -4,6 +4,7 @@ import { fr } from 'date-fns/locale';
 import Modal from './Modal';
 import CreateRoom from './CreateRoom';
 import MakeReservation from './MakeReservation';
+import DeleteRoomModal from './DeleteRoomModal';
 
 interface Room {
   _id: string;
@@ -20,6 +21,8 @@ const WeeklyCalendar: React.FC = () => {
   const [modalContent, setModalContent] = useState<'createRoom' | 'makeReservation' | null>(null);
   const [userGrade, setUserGrade] = useState<string>('visiteur');
   const [error, setError] = useState<string | null>(null);  // Ajout de cette ligne
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
   const fetchRooms = useCallback(async () => {
     try {
@@ -142,6 +145,65 @@ const WeeklyCalendar: React.FC = () => {
     return room.reservations.includes(dateString);
   };
 
+  const handleRoomClick = (room: Room) => {
+    if (userGrade === 'admin') {
+      setSelectedRoom(room);
+      setShowDeleteModal(true);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (selectedRoom) {
+      try {
+        const response = await fetch(`http://localhost:1234/api/rooms/${selectedRoom._id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (response.ok) {
+          await fetchRooms(); // Rafraîchir la liste des salles
+          setShowDeleteModal(false);
+        } else {
+          throw new Error('Erreur lors de la suppression de la salle');
+        }
+      } catch (error) {
+        console.error('Erreur lors de la suppression de la salle:', error);
+        setError('Erreur lors de la suppression de la salle');
+      }
+    }
+  };
+
+  const handleAddRoom = async (room: { name: string; equipment: string }) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token d\'authentification non trouvé');
+      }
+
+      const response = await fetch('http://localhost:1234/api/rooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(room)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de la création de la salle');
+      }
+
+      await fetchRooms(); // Rafraîchir la liste des salles
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la création de la salle:', error);
+      setError(error instanceof Error ? error.message : 'Erreur lors de la création de la salle');
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-lg">
       <div className="flex justify-between items-center mb-4">
@@ -171,7 +233,12 @@ const WeeklyCalendar: React.FC = () => {
         ))}
         {rooms.map((room) => (
           <React.Fragment key={room._id}>
-            <div className="font-bold">{room.name}</div>
+            <div 
+              className="font-bold cursor-pointer hover:text-blue-500"
+              onClick={() => handleRoomClick(room)}
+            >
+              {room.name}
+            </div>
             {days.map((day) => (
               <div 
                 key={day.toString()} 
@@ -203,7 +270,7 @@ const WeeklyCalendar: React.FC = () => {
           )}
           <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
             {modalContent === 'createRoom' && userGrade === 'admin' && (
-              <CreateRoom onAddRoom={() => {/* Implémentez la logique d'ajout de salle ici */}} />
+              <CreateRoom onAddRoom={handleAddRoom} />
             )}
             {modalContent === 'makeReservation' && selectedCell && (
               <MakeReservation
@@ -220,6 +287,12 @@ const WeeklyCalendar: React.FC = () => {
           </Modal>
         </>
       )}
+      <DeleteRoomModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteRoom}
+        roomName={selectedRoom?.name || ''}
+      />
       {error && <div className="text-red-500 mt-4">{error}</div>}
     </div>
   );

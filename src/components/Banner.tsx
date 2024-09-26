@@ -48,7 +48,7 @@ const Banner: React.FC<BannerProps> = ({ onRequestGrade }) => {
             </svg>
           </button>
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden">
               <button 
                 onClick={handleLogout} 
                 className="block w-full text-left px-4 py-2 text-sm text-[#25a8a6] hover:bg-[#1a7572] hover:text-white transition duration-300"

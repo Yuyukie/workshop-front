@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-
 interface ImageUploadFormProps {
   onSubmit: (formData: FormData) => void;
 }
@@ -10,22 +8,8 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onSubmit }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [fileError, setFileError] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files ? e.target.files[0] : null;
-    if (selectedFile) {
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        setFileError("Le fichier est trop volumineux. La taille maximale est de 5 MB.");
-        setFile(null);
-      } else {
-        setFileError(null);
-        setFile(selectedFile);
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
 
@@ -46,8 +30,8 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onSubmit }) => {
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          required
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          required
         />
       </div>
       <div>
@@ -57,19 +41,19 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onSubmit }) => {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        />
+          rows={3}
+        ></textarea>
       </div>
       <div>
         <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image</label>
         <input
           type="file"
           id="image"
-          accept="image/*"
-          onChange={handleFileChange}
-          required
+          onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
           className="mt-1 block w-full"
+          accept="image/*"
+          required
         />
-        {fileError && <p className="text-red-500 text-sm mt-1">{fileError}</p>}
       </div>
       <button
         type="submit"

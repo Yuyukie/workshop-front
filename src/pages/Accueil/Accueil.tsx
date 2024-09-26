@@ -12,12 +12,25 @@ const Accueil: React.FC = () => {
   const [gradeRequests, setGradeRequests] = useState<any[]>([]);
   const [showGradeRequestModal, setShowGradeRequestModal] = useState(false);
   const userGrade = localStorage.getItem('userGrade');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (userGrade === 'admin') {
       fetchGradeRequests();
     }
   }, [userGrade]);
+
+  useEffect(() => {
+    const checkAdminStatus = () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        setIsAdmin(decodedToken.grade === 'admin');
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
 
   const fetchGradeRequests = async () => {
     try {
@@ -125,7 +138,7 @@ const Accueil: React.FC = () => {
           </section>
 
           <section>
-            <Carousel refreshTrigger={refreshCarousel} />
+            <Carousel refreshTrigger={refreshCarousel} isAdmin={isAdmin} />
           </section>
 
           {(userGrade === 'utilisateur' || userGrade === 'admin') && (

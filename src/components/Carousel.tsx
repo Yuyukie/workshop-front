@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaTrash } from 'react-icons/fa';
 
 interface Image {
   _id: string;
@@ -10,9 +10,10 @@ interface Image {
 
 interface CarouselProps {
   refreshTrigger: number;
+  isAdmin: boolean; // Nouvelle prop pour indiquer si l'utilisateur est admin
 }
 
-const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
+const Carousel: React.FC<CarouselProps> = ({ refreshTrigger, isAdmin }) => {
   const [images, setImages] = useState<Image[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,6 +74,35 @@ const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
   };
 
+  const deleteImage = async (id: string) => {
+    if (!isAdmin) {
+      console.error("Accès non autorisé");
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token non trouvé');
+      }
+      const response = await fetch(`http://localhost:1234/api/images/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression de l\'image');
+      }
+      setImages(prevImages => prevImages.filter(img => img._id !== id));
+      if (currentIndex >= images.length - 1) {
+        setCurrentIndex(prevIndex => Math.max(0, prevIndex - 1));
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'image:', error);
+      setError(error instanceof Error ? error.message : 'Erreur lors de la suppression de l\'image');
+    }
+  };
+
   if (isLoading) {
     return <div className="text-white">Chargement des images...</div>;
   }
@@ -97,8 +127,16 @@ const Carousel: React.FC<CarouselProps> = ({ refreshTrigger }) => {
           <img
             src={image.imageUrl}
             alt={image.title}
-            className="w-full h-full object-f"
+            className="w-full h-full object-cover"
           />
+          {isAdmin && (
+            <button
+              onClick={() => deleteImage(image._id)}
+              className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-all duration-300 z-10"
+            >
+              <FaTrash size={20} />
+            </button>
+          )}
         </div>
       ))}
       {images.length > 1 && (
